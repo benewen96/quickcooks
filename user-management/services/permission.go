@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	"quickcooks/user-management/db"

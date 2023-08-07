@@ -5,14 +5,14 @@ import (
 	"quickcooks/user-management/db"
 	"quickcooks/user-management/models"
 	"quickcooks/user-management/server"
-	"quickcooks/user-management/service"
+	"quickcooks/user-management/services"
 )
 
 type UserManagement struct {
-	service.TenantService
-	service.PermissionService
-	service.RoleService
-	service.UserService
+	services.TenantService
+	services.PermissionService
+	services.RoleService
+	services.UserService
 }
 
 var um UserManagement
@@ -29,7 +29,6 @@ func MigrateDatabase() {
 }
 
 func SeedDatabase() {
-
 	resources := []string{
 		"recipe",
 		"plan",
