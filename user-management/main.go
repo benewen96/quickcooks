@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"quickcooks/user-management/db"
+	"quickcooks/user-management/infrastructures"
 	"quickcooks/user-management/models"
 	"quickcooks/user-management/repositories"
 	"quickcooks/user-management/services"
@@ -18,7 +18,7 @@ type UserManagementContext struct {
 }
 
 func NewUserManagementContext() *UserManagementContext {
-	var database = db.NewGormClient()
+	var database = infrastructures.NewGormDB()
 
 	migrator := database.Migrator()
 
@@ -149,5 +149,6 @@ func (c *UserManagementContext) seedDatabase() error {
 }
 
 func main() {
-	NewUserManagementContext()
+	context := NewUserManagementContext()
+	newRouter(context).Run() // listen and serve on 0.0.0.0:8080
 }
