@@ -20,16 +20,9 @@ type UserManagementContext struct {
 func newUserManagementContext() (*UserManagementContext, error) {
 	var database = infrastructures.NewGormDB()
 
-	migrator := database.Migrator()
-
-	err := dropAllTables(migrator)
+	err := migrateDatabase(database, true)
 	if err != nil {
-		fmt.Printf("Error dropping tables: %v", err)
-	}
-
-	err = migrateDatabase(database, true)
-	if err != nil {
-		fmt.Printf("Error migrating database: %v", err)
+		return nil, err
 	}
 
 	var userRepository = repositories.NewGormUserRepository(database)
