@@ -17,7 +17,7 @@ type UserManagementContext struct {
 	AuthorizationService *services.AuthorizationService
 }
 
-func NewUserManagementContext() *UserManagementContext {
+func newUserManagementContext() (*UserManagementContext, error) {
 	var database = infrastructures.NewGormDB()
 
 	migrator := database.Migrator()
@@ -53,10 +53,10 @@ func NewUserManagementContext() *UserManagementContext {
 
 	err = userManagementContext.seedDatabase()
 	if err != nil {
-		fmt.Printf("Error migrating database: %v", err)
+		return nil, err
 	}
 
-	return userManagementContext
+	return userManagementContext, err
 }
 
 func dropAllTables(migrator gorm.Migrator) error {
@@ -117,38 +117,44 @@ func migrateDatabase(database *gorm.DB, drop bool) error {
 func (c *UserManagementContext) seedDatabase() error {
 	err := c.AuthorizationService.SeedAuthorizationData()
 	if err != nil {
-		fmt.Printf("Error seeding authorization data: %v", err)
+		return err
 	}
 
 	joeBloggs, err := c.RegistrationService.RegisterUser("Joe Bloggs", "joe.bloggs@example.com", "password")
 	if err != nil {
-		fmt.Printf("Error creating user: %v", err)
+		return err
 	}
 
 	janeBloggs, err := c.RegistrationService.RegisterUser("Jane Bloggs", "jane.bloggs@example.com", "password")
 	if err != nil {
-		fmt.Printf("Error creating user: %v", err)
+		return err
 	}
 
 	tenant, err := c.MyTenantsService.CreateTenantWithAdmin("example_tenant", joeBloggs.ID)
 	if err != nil {
-		fmt.Printf("Error creating tenant: %v", err)
+		return err
 	}
 
 	member, err := c.AuthorizationService.GetRoleByName("member")
 	if err != nil {
-		fmt.Printf("Error getting member role: %v", err)
+		return err
 	}
 
 	_, err = c.MyTenantsService.AssignTenantRole(tenant.ID, janeBloggs.ID, member.ID)
 	if err != nil {
-		fmt.Printf("Error assigning role: %v", err)
+		return err
 	}
 
 	return nil
 }
 
 func main() {
-	context := NewUserManagementContext()
-	newRouter(context).Run() // listen and serve on 0.0.0.0:8080
+	context, err := newUserManagementContext()
+	if err != nil {
+		fmt.Printf("Error creating context: %v", err)
+	}
+	err = newRouter(context).Run() // listen and serve on 0.0.0.0:8080
+	if err != nil {
+		fmt.Printf("Error starting router: %v", err)
+	}
 }
