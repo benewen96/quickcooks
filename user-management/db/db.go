@@ -5,13 +5,13 @@ import (
 	"gorm.io/gorm"
 )
 
-var Client *gorm.DB
-
-func init() {
+func NewGormClient() *gorm.DB {
 	dsn := "host=localhost user=quickcooks password=password dbname=quickcooks"
 	var err error
-	Client, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	client, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
+
+	return client
 }
