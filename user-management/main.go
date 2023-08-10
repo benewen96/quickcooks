@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"quickcooks/user-management/db"
 	"quickcooks/user-management/models"
-	"quickcooks/user-management/server"
 	"quickcooks/user-management/services"
 )
 
@@ -101,8 +100,6 @@ func SeedDatabase() {
 }
 
 func main() {
-	db.Init()
 	MigrateDatabase()
 	SeedDatabase()
-	server.Init()
 }

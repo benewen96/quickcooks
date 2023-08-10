@@ -7,7 +7,7 @@ import (
 
 var Client *gorm.DB
 
-func Init() {
+func init() {
 	dsn := "host=localhost user=quickcooks password=password dbname=quickcooks"
 	var err error
 	Client, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
