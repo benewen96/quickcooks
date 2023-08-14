@@ -6,6 +6,8 @@ import (
 	"quickcooks/user-management/services"
 )
 
+// An inversion of control container that registers all services for the user
+// management context
 type UserManagementContext struct {
 	RegistrationService  *services.RegistrationService
 	MyProfileService     *services.MyProfileService
@@ -13,8 +15,12 @@ type UserManagementContext struct {
 	AuthorizationService *services.AuthorizationService
 }
 
-func newUserManagementContext() (*UserManagementContext, error) {
-	var database = infrastructures.NewGormDB()
+func newUserManagementContext(config Config) *UserManagementContext {
+	var database = infrastructures.NewGormDB(config.pgConnString)
+
+	if *config.migrate {
+		infrastructures.MigrateDatabase(database)
+	}
 
 	var userRepository = repositories.NewGormUserRepository(database)
 	var tenantRepository = repositories.NewGormTenantRepository(database)
@@ -35,44 +41,20 @@ func newUserManagementContext() (*UserManagementContext, error) {
 		AuthorizationService: authorizationService,
 	}
 
-	err := userManagementContext.seedDatabase()
-	if err != nil {
-		return nil, err
+	seeder := NewSeeder(roleRepository, rolePermissionRepository, permissionRepository, userRepository)
+	if *config.seed {
+		err := seeder.Seed()
+		if err != nil {
+			panic("Unable to seed required data")
+		}
+
+		if *config.environment == "development" {
+			err := seeder.DevSeed(userManagementContext)
+			if err != nil {
+				panic("Unable to seed development data")
+			}
+		}
 	}
 
-	return userManagementContext, err
-}
-
-func (c *UserManagementContext) seedDatabase() error {
-	err := c.AuthorizationService.SeedAuthorizationData()
-	if err != nil {
-		return err
-	}
-
-	joeBloggs, err := c.RegistrationService.RegisterUser("Joe Bloggs", "joe.bloggs@example.com", "password")
-	if err != nil {
-		return err
-	}
-
-	janeBloggs, err := c.RegistrationService.RegisterUser("Jane Bloggs", "jane.bloggs@example.com", "password")
-	if err != nil {
-		return err
-	}
-
-	tenant, err := c.MyTenantsService.CreateTenantWithAdmin("example_tenant", joeBloggs.ID)
-	if err != nil {
-		return err
-	}
-
-	member, err := c.AuthorizationService.GetRoleByName("member")
-	if err != nil {
-		return err
-	}
-
-	_, err = c.MyTenantsService.AssignTenantRole(tenant.ID, janeBloggs.ID, member.ID)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return userManagementContext
 }

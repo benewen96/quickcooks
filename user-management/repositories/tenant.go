@@ -44,16 +44,16 @@ func (r *GormTenantRepository) GetByUserID(userID uint) ([]*models.Tenant, error
 }
 
 func (r *GormTenantRepository) Create(tenant *models.Tenant) (*models.Tenant, error) {
-	result := r.DB.Create(&tenant)
+	result := r.DB.Create(tenant)
 	return tenant, result.Error
 }
 
 func (r *GormTenantRepository) Delete(tenant *models.Tenant) (*models.Tenant, error) {
-	result := r.DB.Delete(&tenant)
+	result := r.DB.Delete(tenant)
 	return tenant, result.Error
 }
 
 func (us *GormTenantRepository) UpdateName(tenant *models.Tenant, name string) (*models.Tenant, error) {
-	result := us.DB.First(&tenant).Update("Name", name)
+	result := us.DB.First(tenant).Update("Name", name)
 	return tenant, result.Error
 }

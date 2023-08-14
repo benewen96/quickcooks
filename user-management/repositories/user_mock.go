@@ -18,7 +18,7 @@ func (r *MockUserRepository) GetByID(ID uint) (*models.User, error) {
 			return u, nil
 		}
 	}
-	return &models.User{}, nil
+	return nil, nil
 }
 
 func (r *MockUserRepository) GetByTenantID(tenantID uint) ([]*models.User, error) {
@@ -40,7 +40,7 @@ func (r *MockUserRepository) GetByEmail(email string) (*models.User, error) {
 			return u, nil
 		}
 	}
-	return &models.User{}, nil
+	return nil, nil
 }
 
 func (r *MockUserRepository) Create(user *models.User) (*models.User, error) {

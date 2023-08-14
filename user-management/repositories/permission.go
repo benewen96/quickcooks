@@ -36,11 +36,11 @@ func (r *GormPermissionRepository) GetByID(ID uint) (*models.Permission, error) 
 }
 
 func (r *GormPermissionRepository) Create(permission *models.Permission) (*models.Permission, error) {
-	result := r.DB.Create(&permission)
+	result := r.DB.Create(permission)
 	return permission, result.Error
 }
 
 func (r *GormPermissionRepository) Delete(permission *models.Permission) (*models.Permission, error) {
-	result := r.DB.Delete(&permission)
+	result := r.DB.Delete(permission)
 	return permission, result.Error
 }

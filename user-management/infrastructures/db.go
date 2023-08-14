@@ -7,59 +7,50 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewGormDB() *gorm.DB {
-	dsn := "host=localhost user=quickcooks password=password dbname=quickcooks"
+func NewGormDB(connString string) *gorm.DB {
 	var err error
-	client, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	client, err := gorm.Open(postgres.Open(connString), &gorm.Config{})
 	if err != nil {
 		panic("Error connecting to database")
 	}
-	err = migrateDatabase(client, true)
 	if err != nil {
 		panic("Error migrating database")
 	}
 	return client
 }
 
-func dropAllTables(migrator gorm.Migrator) error {
-	var err error
-	err = migrator.DropTable(&models.Tenant{})
-	if err != nil {
-		return err
-	}
-	err = migrator.DropTable(&models.User{})
-	if err != nil {
-		return err
-	}
-	err = migrator.DropTable(&models.Permission{})
-	if err != nil {
-		return err
-	}
-	err = migrator.DropTable(&models.Role{})
-	if err != nil {
-		return err
-	}
-	err = migrator.DropTable(&models.RoleAssignment{})
-	if err != nil {
-		return err
-	}
-	err = migrator.DropTable(&models.RolePermission{})
-	if err != nil {
-		return err
-	}
+// func dropAllTables(migrator gorm.Migrator) error {
+// 	var err error
+// 	err = migrator.DropTable(&models.Tenant{})
+// 	if err != nil {
+// 		return err
+// 	}
+// 	err = migrator.DropTable(&models.User{})
+// 	if err != nil {
+// 		return err
+// 	}
+// 	err = migrator.DropTable(&models.Permission{})
+// 	if err != nil {
+// 		return err
+// 	}
+// 	err = migrator.DropTable(&models.Role{})
+// 	if err != nil {
+// 		return err
+// 	}
+// 	err = migrator.DropTable(&models.RoleAssignment{})
+// 	if err != nil {
+// 		return err
+// 	}
+// 	err = migrator.DropTable(&models.RolePermission{})
+// 	if err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func migrateDatabase(database *gorm.DB, drop bool) error {
+func MigrateDatabase(database *gorm.DB) error {
 	migrator := database.Migrator()
-
-	if drop {
-		err := dropAllTables(migrator)
-		if err != nil {
-			return err
-		}
-	}
 
 	err := migrator.AutoMigrate(
 		&models.Tenant{},

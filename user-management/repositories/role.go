@@ -44,16 +44,16 @@ func (r *GormRoleRepository) GetByName(name string) (*models.Role, error) {
 }
 
 func (r *GormRoleRepository) Create(role *models.Role) (*models.Role, error) {
-	result := r.DB.Create(&role)
+	result := r.DB.Create(role)
 	return role, result.Error
 }
 
 func (r *GormRoleRepository) Delete(role *models.Role) (*models.Role, error) {
-	result := r.DB.Delete(&role)
+	result := r.DB.Delete(role)
 	return role, result.Error
 }
 
 func (r *GormRoleRepository) UpdateName(role *models.Role, name string) (*models.Role, error) {
-	result := r.DB.First(&role).Update("Name", name)
+	result := r.DB.First(role).Update("Name", name)
 	return role, result.Error
 }
