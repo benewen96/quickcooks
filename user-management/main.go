@@ -10,14 +10,16 @@ type Config struct {
 	environment  *string
 	migrate      *bool
 	seed         *bool
+	devSeed      *bool
 	pgConnString string
 }
 
 func ReadConfig() *Config {
 	flag.CommandLine.SetOutput(os.Stdout)
-	environment := flag.String("environment", "development", "Seed the QuickCooks database with initial data")
+	environment := flag.String("environment", "development", "Environment to use [development/production]")
 	migrate := flag.Bool("migrate", false, "Migrate the QuickCooks database")
-	seed := flag.Bool("seed", false, "Seed the QuickCooks database with initial data")
+	seed := flag.Bool("seed", false, "Seed the QuickCooks database with required data")
+	devSeed := flag.Bool("devSeed", false, "Seed the QuickCooks database with development data")
 	pgConnString, found := os.LookupEnv("PG_CONNECTION_STRING")
 	flag.Parse()
 	// shit code fix
@@ -28,6 +30,7 @@ func ReadConfig() *Config {
 		environment:  environment,
 		migrate:      migrate,
 		seed:         seed,
+		devSeed:      devSeed,
 		pgConnString: pgConnString,
 	}
 }

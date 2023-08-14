@@ -48,7 +48,7 @@ func newUserManagementContext(config Config) *UserManagementContext {
 			panic("Unable to seed required data")
 		}
 
-		if *config.environment == "development" {
+		if *config.devSeed && *config.environment == "development" {
 			err := seeder.DevSeed(userManagementContext)
 			if err != nil {
 				panic("Unable to seed development data")
