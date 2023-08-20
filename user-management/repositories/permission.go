@@ -10,6 +10,7 @@ type IPermissionRepository interface {
 	GetAll() ([]*models.Permission, error)
 	GetByID(ID uint) (*models.Permission, error)
 	Create(permission *models.Permission) (*models.Permission, error)
+	FindOrCreate(permission *models.Permission) (*models.Permission, error)
 	Delete(permission *models.Permission) (*models.Permission, error)
 }
 
@@ -37,6 +38,11 @@ func (r *GormPermissionRepository) GetByID(ID uint) (*models.Permission, error) 
 
 func (r *GormPermissionRepository) Create(permission *models.Permission) (*models.Permission, error) {
 	result := r.DB.Create(permission)
+	return permission, result.Error
+}
+
+func (r *GormPermissionRepository) FindOrCreate(permission *models.Permission) (*models.Permission, error) {
+	result := r.DB.FirstOrCreate(permission, permission)
 	return permission, result.Error
 }
 

@@ -10,6 +10,7 @@ type IRolePermissionRepository interface {
 	GetByID(ID uint) (*models.RolePermission, error)
 	GetByRoleID(roleID uint) ([]*models.RolePermission, error)
 	Create(rolePermission *models.RolePermission) (*models.RolePermission, error)
+	FindOrCreate(rolePermission *models.RolePermission) (*models.RolePermission, error)
 	Delete(rolePermission *models.RolePermission) (*models.RolePermission, error)
 }
 
@@ -41,6 +42,11 @@ func (r *GormRolePermissionRepository) GetByRoleID(roleID uint) ([]*models.RoleP
 
 func (r *GormRolePermissionRepository) Create(rolePermission *models.RolePermission) (*models.RolePermission, error) {
 	result := r.DB.Create(rolePermission)
+	return rolePermission, result.Error
+}
+
+func (r *GormRolePermissionRepository) FindOrCreate(rolePermission *models.RolePermission) (*models.RolePermission, error) {
+	result := r.DB.FirstOrCreate(rolePermission, rolePermission)
 	return rolePermission, result.Error
 }
 

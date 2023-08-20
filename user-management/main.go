@@ -19,7 +19,7 @@ func ReadConfig() *Config {
 	environment := flag.String("environment", "development", "Environment to use [development/production]")
 	migrate := flag.Bool("migrate", false, "Migrate the QuickCooks database")
 	seed := flag.Bool("seed", false, "Seed the QuickCooks database with required data")
-	devSeed := flag.Bool("devSeed", false, "Seed the QuickCooks database with development data")
+	devSeed := flag.Bool("dev-seed", false, "Seed the QuickCooks database with development data")
 	pgConnString, found := os.LookupEnv("PG_CONNECTION_STRING")
 	flag.Parse()
 	// shit code fix

@@ -83,23 +83,17 @@ func (s *Seeder) DevSeed(c *UserManagementContext) error {
 }
 
 func (s *Seeder) seedRoles() ([]*models.Role, error) {
-	var roles []*models.Role
-
-	admin := &models.Role{Name: "admin"}
-	admin, err := s.roleRepository.Create(admin)
+	admin, err := s.roleRepository.FindOrCreate(&models.Role{Name: "admin"})
 	if err != nil {
-		return roles, err
+		return nil, err
 	}
 
-	member := &models.Role{Name: "member"}
-	member, err = s.roleRepository.Create(member)
+	member, err := s.roleRepository.FindOrCreate(&models.Role{Name: "member"})
 	if err != nil {
-		return roles, err
+		return nil, err
 	}
 
-	roles = []*models.Role{admin, member}
-
-	return roles, err
+	return []*models.Role{admin, member}, nil
 }
 
 func (s *Seeder) seedPermissions() ([]*models.Permission, error) {
@@ -124,10 +118,10 @@ func (s *Seeder) seedPermissions() ([]*models.Permission, error) {
 	for _, resource := range resources {
 		for _, action := range actions {
 			permission := &models.Permission{Resource: resource, Action: action}
-			permission, err := s.permissionRepository.Create(permission)
+			permission, err := s.permissionRepository.FindOrCreate(permission)
 
 			if err != nil {
-				return permissions, err
+				return nil, err
 			}
 
 			permissions = append(permissions, permission)
@@ -139,7 +133,7 @@ func (s *Seeder) seedPermissions() ([]*models.Permission, error) {
 func (s *Seeder) seedRolePermissions(roles []*models.Role, permissions []*models.Permission) error {
 	for _, p := range permissions {
 		_, err := s.rolePermissionRepository.
-			Create(&models.RolePermission{
+			FindOrCreate(&models.RolePermission{
 				RoleID:       roles[0].ID,
 				PermissionID: p.ID,
 			})
@@ -148,7 +142,10 @@ func (s *Seeder) seedRolePermissions(roles []*models.Role, permissions []*models
 		}
 
 		if p.Action == "read" {
-			_, err := s.rolePermissionRepository.Create(&models.RolePermission{RoleID: roles[1].ID, PermissionID: p.ID})
+			_, err := s.rolePermissionRepository.FindOrCreate(&models.RolePermission{
+				RoleID:       roles[1].ID,
+				PermissionID: p.ID,
+			})
 			if err != nil {
 				return err
 			}
