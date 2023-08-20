@@ -7,10 +7,10 @@ import (
 )
 
 type Config struct {
-	environment  *string
-	migrate      *bool
-	seed         *bool
-	devSeed      *bool
+	environment  string
+	migrate      bool
+	seed         bool
+	devSeed      bool
 	pgConnString string
 }
 
@@ -27,10 +27,10 @@ func ReadConfig() *Config {
 		pgConnString = "host=localhost user=quickcooks password=password dbname=quickcooks"
 	}
 	return &Config{
-		environment:  environment,
-		migrate:      migrate,
-		seed:         seed,
-		devSeed:      devSeed,
+		environment:  *environment,
+		migrate:      *migrate,
+		seed:         *seed,
+		devSeed:      *devSeed,
 		pgConnString: pgConnString,
 	}
 }

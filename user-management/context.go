@@ -18,7 +18,7 @@ type UserManagementContext struct {
 func newUserManagementContext(config Config) *UserManagementContext {
 	var database = infrastructures.NewGormDB(config.pgConnString)
 
-	if *config.migrate {
+	if config.migrate {
 		infrastructures.MigrateDatabase(database)
 	}
 
@@ -42,13 +42,13 @@ func newUserManagementContext(config Config) *UserManagementContext {
 	}
 
 	seeder := NewSeeder(roleRepository, rolePermissionRepository, permissionRepository, userRepository)
-	if *config.seed {
+	if config.seed {
 		err := seeder.Seed()
 		if err != nil {
 			panic("Unable to seed required data")
 		}
 
-		if *config.devSeed && *config.environment == "development" {
+		if config.devSeed && config.environment == "development" {
 			err := seeder.DevSeed(userManagementContext)
 			if err != nil {
 				panic("Unable to seed development data")
