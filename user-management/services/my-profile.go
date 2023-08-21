@@ -19,6 +19,10 @@ func (s *MyProfileService) GetUserByID(ID uint) (*models.User, error) {
 	return s.userRepository.GetByID(ID)
 }
 
+func (s *MyProfileService) GetUserByEmail(email string) (*models.User, error) {
+	return s.userRepository.GetByEmail(email)
+}
+
 func (s *MyProfileService) UpdateUserName(userID uint, name string) (*models.User, error) {
 	user, err := s.userRepository.GetByID(userID)
 	if err != nil {
