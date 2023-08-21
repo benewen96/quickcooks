@@ -6,9 +6,9 @@ import (
 )
 
 type MyTenantsService struct {
-	TenantRepository         repositories.ITenantRepository
-	RoleRepository           repositories.IRoleRepository
-	RoleAssignmentRepository repositories.IRoleAssignmentRepository
+	tenantRepository         repositories.ITenantRepository
+	roleRepository           repositories.IRoleRepository
+	roleAssignmentRepository repositories.IRoleAssignmentRepository
 }
 
 func NewMyTenantsService(
@@ -17,26 +17,30 @@ func NewMyTenantsService(
 	roleAssignmentRepository repositories.IRoleAssignmentRepository,
 ) *MyTenantsService {
 	return &MyTenantsService{
-		TenantRepository:         tenantRepository,
-		RoleRepository:           roleRepository,
-		RoleAssignmentRepository: roleAssignmentRepository,
+		tenantRepository:         tenantRepository,
+		roleRepository:           roleRepository,
+		roleAssignmentRepository: roleAssignmentRepository,
 	}
 }
 
+func (s *MyTenantsService) GetTenantByID(ID uint) (*models.Tenant, error) {
+	return s.tenantRepository.GetByID(ID)
+}
+
 func (s *MyTenantsService) GetTenantsByUserID(userID uint) ([]*models.Tenant, error) {
-	return s.TenantRepository.GetByUserID(userID)
+	return s.tenantRepository.GetByUserID(userID)
 }
 
 func (s *MyTenantsService) CreateTenantWithAdmin(name string, userID uint) (*models.Tenant, error) {
 	tenant := &models.Tenant{
 		Name: name,
 	}
-	tenant, err := s.TenantRepository.Create(tenant)
+	tenant, err := s.tenantRepository.Create(tenant)
 	if err != nil {
 		return nil, err
 	}
 
-	role, err := s.RoleRepository.GetByName("admin")
+	role, err := s.roleRepository.GetByName("admin")
 	if err != nil {
 		return nil, err
 	}
@@ -46,20 +50,20 @@ func (s *MyTenantsService) CreateTenantWithAdmin(name string, userID uint) (*mod
 		UserID:   userID,
 		RoleID:   role.ID,
 	}
-	_, err = s.RoleAssignmentRepository.Create(roleAssignment)
+	_, err = s.roleAssignmentRepository.Create(roleAssignment)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.TenantRepository.GetByID(tenant.ID)
+	return s.tenantRepository.GetByID(tenant.ID)
 }
 
 func (s *MyTenantsService) UpdateTenantName(tenantID uint, name string) (*models.Tenant, error) {
-	tenant, err := s.TenantRepository.GetByID(tenantID)
+	tenant, err := s.tenantRepository.GetByID(tenantID)
 	if err != nil {
 		return nil, err
 	}
-	return s.TenantRepository.UpdateName(tenant, name)
+	return s.tenantRepository.UpdateName(tenant, name)
 }
 
 func (s *MyTenantsService) AssignTenantRole(tenantID uint, userID uint, roleID uint) (*models.RoleAssignment, error) {
@@ -68,21 +72,21 @@ func (s *MyTenantsService) AssignTenantRole(tenantID uint, userID uint, roleID u
 		UserID:   userID,
 		RoleID:   roleID,
 	}
-	return s.RoleAssignmentRepository.Create(roleAssignment)
+	return s.roleAssignmentRepository.Create(roleAssignment)
 }
 
 func (s *MyTenantsService) UnassignTenantRole(roleAssignmentID uint) (*models.RoleAssignment, error) {
-	roleAssignment, err := s.RoleAssignmentRepository.GetByID(roleAssignmentID)
+	roleAssignment, err := s.roleAssignmentRepository.GetByID(roleAssignmentID)
 	if err != nil {
 		return nil, err
 	}
-	return s.RoleAssignmentRepository.Delete(roleAssignment)
+	return s.roleAssignmentRepository.Delete(roleAssignment)
 }
 
 func (s *MyTenantsService) UnassignTenantUser(userID uint) ([]*models.RoleAssignment, error) {
-	roleAssignments, err := s.RoleAssignmentRepository.GetByUserID(userID)
+	roleAssignments, err := s.roleAssignmentRepository.GetByUserID(userID)
 	if err != nil {
 		return nil, err
 	}
-	return s.RoleAssignmentRepository.DeleteMany(roleAssignments)
+	return s.roleAssignmentRepository.DeleteMany(roleAssignments)
 }

@@ -6,12 +6,12 @@ import (
 )
 
 type RegistrationService struct {
-	UserRepository repositories.IUserRepository
+	userRepository repositories.IUserRepository
 }
 
 func NewRegistrationService(userRepository repositories.IUserRepository) *RegistrationService {
 	return &RegistrationService{
-		UserRepository: userRepository,
+		userRepository: userRepository,
 	}
 }
 
@@ -24,13 +24,13 @@ func (s *RegistrationService) RegisterUser(name string, email string, password s
 		Email:    email,
 		Password: password,
 	}
-	return s.UserRepository.Create(user)
+	return s.userRepository.Create(user)
 }
 
 func (s *RegistrationService) UnregisterUser(userID uint) (*models.User, error) {
-	user, err := s.UserRepository.GetByID(userID)
+	user, err := s.userRepository.GetByID(userID)
 	if err != nil {
 		return nil, err
 	}
-	return s.UserRepository.Delete(user)
+	return s.userRepository.Delete(user)
 }

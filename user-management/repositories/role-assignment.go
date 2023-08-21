@@ -54,19 +54,19 @@ func (r *GormRoleAssignmentRepository) GetByUserID(userID uint) ([]*models.RoleA
 }
 
 func (r *GormRoleAssignmentRepository) Create(roleAssignment *models.RoleAssignment) (*models.RoleAssignment, error) {
-	result := r.DB.Create(&roleAssignment)
+	result := r.DB.Create(roleAssignment)
 	return roleAssignment, result.Error
 }
 
 func (r *GormRoleAssignmentRepository) Delete(roleAssignment *models.RoleAssignment) (*models.RoleAssignment, error) {
-	result := r.DB.Delete(&roleAssignment)
+	result := r.DB.Delete(roleAssignment)
 	return roleAssignment, result.Error
 }
 
 func (r *GormRoleAssignmentRepository) DeleteMany(roleAssignments []*models.RoleAssignment) ([]*models.RoleAssignment, error) {
 	tx := r.DB.Begin()
 	for _, ra := range roleAssignments {
-		err := tx.Delete(&ra).Error
+		err := tx.Delete(ra).Error
 		if err != nil {
 			tx = tx.Rollback()
 			break

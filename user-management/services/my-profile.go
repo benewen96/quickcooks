@@ -6,41 +6,45 @@ import (
 )
 
 type MyProfileService struct {
-	UserRepository repositories.IUserRepository
+	userRepository repositories.IUserRepository
 }
 
 func NewMyProfileService(userRepository repositories.IUserRepository) *MyProfileService {
 	return &MyProfileService{
-		UserRepository: userRepository,
+		userRepository: userRepository,
 	}
 }
 
 func (s *MyProfileService) GetUserByID(ID uint) (*models.User, error) {
-	return s.UserRepository.GetByID(ID)
+	return s.userRepository.GetByID(ID)
+}
+
+func (s *MyProfileService) GetUserByEmail(email string) (*models.User, error) {
+	return s.userRepository.GetByEmail(email)
 }
 
 func (s *MyProfileService) UpdateUserName(userID uint, name string) (*models.User, error) {
-	user, err := s.UserRepository.GetByID(userID)
+	user, err := s.userRepository.GetByID(userID)
 	if err != nil {
 		return nil, err
 	}
-	return s.UserRepository.UpdateName(user, name)
+	return s.userRepository.UpdateName(user, name)
 }
 
 func (s *MyProfileService) UpdateUserEmail(userID uint, email string) (*models.User, error) {
-	user, err := s.UserRepository.GetByID(userID)
+	user, err := s.userRepository.GetByID(userID)
 	if err != nil {
 		return nil, err
 	}
-	return s.UserRepository.UpdateEmail(user, email)
+	return s.userRepository.UpdateEmail(user, email)
 }
 
 // TODO: Password hashing
 
 func (s *MyProfileService) UpdateUserPassword(userID uint, password string) (*models.User, error) {
-	user, err := s.UserRepository.GetByID(userID)
+	user, err := s.userRepository.GetByID(userID)
 	if err != nil {
 		return nil, err
 	}
-	return s.UserRepository.UpdatePassword(user, password)
+	return s.userRepository.UpdatePassword(user, password)
 }
