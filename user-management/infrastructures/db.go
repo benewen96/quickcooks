@@ -28,15 +28,10 @@ func NewGormDB(connString string) *gorm.DB {
 		Logger: newLogger,
 	})
 	if err != nil {
-		panic("Error connecting to database")
+		panic("Error connecting to database: " + err.Error())
 	}
-	return client
-}
 
-func MigrateDatabase(database *gorm.DB) error {
-	migrator := database.Migrator()
-
-	err := migrator.AutoMigrate(
+	err = client.AutoMigrate(
 		&models.Tenant{},
 		&models.User{},
 		&models.Permission{},
@@ -45,8 +40,8 @@ func MigrateDatabase(database *gorm.DB) error {
 		&models.RolePermission{},
 	)
 	if err != nil {
-		return err
+		panic("Error migrating database: " + err.Error())
 	}
 
-	return nil
+	return client
 }
