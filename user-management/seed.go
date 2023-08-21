@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"quickcooks/user-management/models"
 	"quickcooks/user-management/repositories"
 )
@@ -27,7 +26,7 @@ func NewSeeder(
 	}
 }
 
-func (s *Seeder) Seed() error {
+func (s *Seeder) SeedRequiredData() error {
 	roles, err := s.seedRoles()
 	if err != nil {
 		return err
@@ -41,9 +40,9 @@ func (s *Seeder) Seed() error {
 
 }
 
-func (s *Seeder) DevSeed(c *UserManagementContext) error {
+func (s *Seeder) SeedDevData(c *UserManagementContext) error {
 	var joeBloggs, janeBloggs *models.User
-	var exampleTenant *models.Tenant
+	var bloggsTenant *models.Tenant
 	var memberRole *models.Role
 
 	var err error
@@ -53,9 +52,29 @@ func (s *Seeder) DevSeed(c *UserManagementContext) error {
 		if err != nil {
 			return err
 		}
-		exampleTenant, err = c.MyTenantsService.CreateTenantWithAdmin("example_tenant", joeBloggs.ID)
+		bloggsTenant, err = c.MyTenantsService.CreateTenantWithAdmin("Bloggs Tenant", joeBloggs.ID)
 		if err != nil {
 			return err
+		}
+	} else {
+		joeBloggs, err = c.MyProfileService.GetUserByEmail("joe.bloggs@example.com")
+		if err != nil {
+			return err
+		}
+		tenants, err := c.MyTenantsService.GetTenantsByUserID(joeBloggs.ID)
+		if err != nil {
+			return err
+		}
+		if len(tenants) == 0 {
+			bloggsTenant, err = c.MyTenantsService.CreateTenantWithAdmin("Bloggs Tenant", joeBloggs.ID)
+			if err != nil {
+				return err
+			}
+		} else {
+			bloggsTenant, err = c.MyTenantsService.GetTenantByID(joeBloggs.RoleAssignments[0].TenantID)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -70,10 +89,7 @@ func (s *Seeder) DevSeed(c *UserManagementContext) error {
 			return err
 		}
 
-		fmt.Printf("tenantID: %v", exampleTenant.ID)
-		fmt.Printf("userID: %v", janeBloggs.ID)
-		fmt.Printf("roleID: %v", memberRole.ID)
-		_, err = c.MyTenantsService.AssignTenantRole(exampleTenant.ID, janeBloggs.ID, memberRole.ID)
+		_, err = c.MyTenantsService.AssignTenantRole(bloggsTenant.ID, janeBloggs.ID, memberRole.ID)
 		if err != nil {
 			return err
 		}

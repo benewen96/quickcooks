@@ -16,11 +16,7 @@ type UserManagementContext struct {
 }
 
 func newUserManagementContext(config Config) *UserManagementContext {
-	var database = infrastructures.NewGormDB(config.pgConnString)
-
-	if config.migrate {
-		infrastructures.MigrateDatabase(database)
-	}
+	var database = infrastructures.NewGormDB(config.connectionString)
 
 	var userRepository = repositories.NewGormUserRepository(database)
 	var tenantRepository = repositories.NewGormTenantRepository(database)
@@ -41,19 +37,24 @@ func newUserManagementContext(config Config) *UserManagementContext {
 		AuthorizationService: authorizationService,
 	}
 
-	seeder := NewSeeder(roleRepository, rolePermissionRepository, permissionRepository, userRepository)
-	if config.seed {
-		err := seeder.Seed()
-		if err != nil {
-			panic("Unable to seed required data")
-		}
-
+	if config.seed == "none" {
+		return userManagementContext
 	}
 
-	if config.devSeed && config.environment == "development" {
-		err := seeder.DevSeed(userManagementContext)
+	seeder := NewSeeder(roleRepository, rolePermissionRepository, permissionRepository, userRepository)
+
+	err := seeder.SeedRequiredData()
+	if err != nil {
+		panic("Unable to seed required data: " + err.Error())
+	}
+
+	if config.seed == "dev" {
+		if config.environment != "development" {
+			panic("Cannot seed development data in a non-devlopment environment!")
+		}
+		err := seeder.SeedDevData(userManagementContext)
 		if err != nil {
-			panic("Unable to seed development data")
+			panic("Unable to seed development data: " + err.Error())
 		}
 	}
 
