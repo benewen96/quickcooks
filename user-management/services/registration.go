@@ -5,10 +5,13 @@ import (
 	"quickcooks/user-management/repositories"
 )
 
+// A RegistrationService is a provider for user registration functionality
 type RegistrationService struct {
 	UserRepository repositories.IUserRepository
 }
 
+// NewRegistrationService creates a new RegistrationService instance with the
+// given user repository
 func NewRegistrationService(userRepository repositories.IUserRepository) *RegistrationService {
 	return &RegistrationService{
 		UserRepository: userRepository,
@@ -18,6 +21,7 @@ func NewRegistrationService(userRepository repositories.IUserRepository) *Regist
 // TODO: Email verification
 // TODO: Password hashing
 
+// RegisterUser creates a new QuickCooks user with the given information
 func (s *RegistrationService) RegisterUser(name string, email string, password string) (*models.User, error) {
 	user := &models.User{
 		Name:     name,
@@ -27,6 +31,7 @@ func (s *RegistrationService) RegisterUser(name string, email string, password s
 	return s.UserRepository.Create(user)
 }
 
+// RegisterUser removes a new QuickCooks user with the given ID
 func (s *RegistrationService) UnregisterUser(userID uint) (*models.User, error) {
 	user, err := s.UserRepository.GetByID(userID)
 	if err != nil {
