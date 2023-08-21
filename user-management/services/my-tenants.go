@@ -23,6 +23,10 @@ func NewMyTenantsService(
 	}
 }
 
+func (s *MyTenantsService) GetTenantByID(ID uint) (*models.Tenant, error) {
+	return s.tenantRepository.GetByID(ID)
+}
+
 func (s *MyTenantsService) GetTenantsByUserID(userID uint) ([]*models.Tenant, error) {
 	return s.tenantRepository.GetByUserID(userID)
 }
