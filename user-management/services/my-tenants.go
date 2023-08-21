@@ -26,8 +26,8 @@ func NewMyTenantsService(
 	}
 }
 
-// GetTenantsByUserID returns all tenants with role assigned to the user with
-// the given ID
+// GetTenantsByUserID returns all tenants where the user with the given ID has a role
+// assignment
 func (s *MyTenantsService) GetTenantsByUserID(userID uint) ([]*models.Tenant, error) {
 	return s.TenantRepository.GetByUserID(userID)
 }
@@ -92,6 +92,7 @@ func (s *MyTenantsService) UnassignTenantRole(roleAssignmentID uint) (*models.Ro
 	return s.RoleAssignmentRepository.Delete(roleAssignment)
 }
 
+// UnassignTenantUser removes all role assignments with the given user ID
 func (s *MyTenantsService) UnassignTenantUser(userID uint) ([]*models.RoleAssignment, error) {
 	roleAssignments, err := s.RoleAssignmentRepository.GetByUserID(userID)
 	if err != nil {
