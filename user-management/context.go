@@ -1,62 +1,108 @@
 package main
 
 import (
-	"quickcooks/user-management/infrastructures"
+	"quickcooks/user-management/models"
 	"quickcooks/user-management/repositories"
 	"quickcooks/user-management/services"
+
+	"gorm.io/gorm"
 )
 
 // An inversion of control container that registers all services for the user
 // management context
 type UserManagementContext struct {
-	RegistrationService  *services.RegistrationService
-	MyProfileService     *services.MyProfileService
-	MyTenantsService     *services.MyTenantsService
-	AuthorizationService *services.AuthorizationService
+	RegistrationService   *services.RegistrationService
+	MyProfileService      *services.MyProfileService
+	MyTenantsService      *services.MyTenantsService
+	AuthorizationService  *services.AuthorizationService
+	AuthenticationService *services.AuthenticationService
 }
 
-func newUserManagementContext(config Config) *UserManagementContext {
-	var database = infrastructures.NewGormDB(config.connectionString)
+func newUserManagementContext(database *gorm.DB) (*UserManagementContext, error) {
+	userRepository := repositories.NewGormUserRepository(database)
+	tenantRepository := repositories.NewGormTenantRepository(database)
+	roleRepository := repositories.NewGormRoleRepository(database)
+	roleAssignmentRepository := repositories.NewGormRoleAssignmentRepository(database)
+	rolePermissionRepository := repositories.NewGormRolePermissionRepository(database)
+	permissionRepository := repositories.NewGormPermissionRepository(database)
 
-	var userRepository = repositories.NewGormUserRepository(database)
-	var tenantRepository = repositories.NewGormTenantRepository(database)
-	var roleRepository = repositories.NewGormRoleRepository(database)
-	var roleAssignmentRepository = repositories.NewGormRoleAssignmentRepository(database)
-	var rolePermissionRepository = repositories.NewGormRolePermissionRepository(database)
-	var permissionRepository = repositories.NewGormPermissionRepository(database)
-
-	var registrationService = services.NewRegistrationService(userRepository)
-	var myProfileService = services.NewMyProfileService(userRepository)
-	var myTenantsService = services.NewMyTenantsService(tenantRepository, roleRepository, roleAssignmentRepository)
-	var authorizationService = services.NewAuthorizationService(roleRepository, rolePermissionRepository, permissionRepository)
+	registrationService := services.NewRegistrationService(userRepository)
+	myProfileService := services.NewMyProfileService(userRepository)
+	myTenantsService := services.NewMyTenantsService(tenantRepository, roleRepository, roleAssignmentRepository)
+	authorizationService, err := services.NewAuthorizationService(roleRepository, rolePermissionRepository, permissionRepository)
+	if err != nil {
+		return nil, err
+	}
+	authenticationService, err := services.NewAuthenticationService(userRepository)
+	if err != nil {
+		return nil, err
+	}
 
 	userManagementContext := &UserManagementContext{
-		RegistrationService:  registrationService,
-		MyProfileService:     myProfileService,
-		MyTenantsService:     myTenantsService,
-		AuthorizationService: authorizationService,
+		RegistrationService:   registrationService,
+		MyProfileService:      myProfileService,
+		MyTenantsService:      myTenantsService,
+		AuthorizationService:  authorizationService,
+		AuthenticationService: authenticationService,
 	}
 
-	if config.seed == "none" {
-		return userManagementContext
-	}
+	return userManagementContext, nil
+}
 
-	seeder := NewSeeder(roleRepository, rolePermissionRepository, permissionRepository, userRepository)
+func (c *UserManagementContext) Seed() error {
+	var joeBloggs, janeBloggs *models.User
+	var bloggsTenant *models.Tenant
+	var memberRole *models.Role
 
-	err := seeder.SeedRequiredData()
-	if err != nil {
-		panic("Unable to seed required data: " + err.Error())
-	}
+	var err error
 
-	if config.seed == "dev" {
-		if config.environment != "development" {
-			panic("Cannot seed development data in a non-devlopment environment!")
-		}
-		err := seeder.SeedDevData(userManagementContext)
+	if !c.AuthenticationService.CheckUserEmailExists("joe.bloggs@example.com") {
+		joeBloggs, err = c.RegistrationService.RegisterUser("Joe Bloggs", "joe.bloggs@example.com", "password")
 		if err != nil {
-			panic("Unable to seed development data: " + err.Error())
+			return err
+		}
+		bloggsTenant, err = c.MyTenantsService.CreateTenantWithAdmin("Bloggs Tenant", joeBloggs.ID)
+		if err != nil {
+			return err
+		}
+	} else {
+		joeBloggs, err = c.MyProfileService.GetUserByEmail("joe.bloggs@example.com")
+		if err != nil {
+			return err
+		}
+		tenants, err := c.MyTenantsService.GetTenantsByUserID(joeBloggs.ID)
+		if err != nil {
+			return err
+		}
+		if len(tenants) == 0 {
+			bloggsTenant, err = c.MyTenantsService.CreateTenantWithAdmin("Bloggs Tenant", joeBloggs.ID)
+			if err != nil {
+				return err
+			}
+		} else {
+			bloggsTenant, err = c.MyTenantsService.GetTenantByID(joeBloggs.RoleAssignments[0].TenantID)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
-	return userManagementContext
+	if !c.AuthenticationService.CheckUserEmailExists("jane.bloggs@example.com") {
+		janeBloggs, err = c.RegistrationService.RegisterUser("Jane Bloggs", "jane.bloggs@example.com", "password")
+		if err != nil {
+			return err
+		}
+
+		memberRole, err = c.AuthorizationService.GetRoleByName("member")
+		if err != nil {
+			return err
+		}
+
+		_, err = c.MyTenantsService.AssignTenantRole(bloggsTenant.ID, janeBloggs.ID, memberRole.ID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

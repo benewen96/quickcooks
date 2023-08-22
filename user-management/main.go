@@ -4,25 +4,23 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"quickcooks/user-management/infrastructures"
 )
 
 type Config struct {
 	environment      string
-	seed             string
 	connectionString string
+	seed             bool
+	serve            bool
 }
 
-func ReadConfig() *Config {
+func readConfig() *Config {
 	flag.CommandLine.SetOutput(os.Stdout)
 	environment := flag.String("environment", "development", "Environment to use [development/production]")
-	seed := flag.String("seed", "none", "Seeds the QuickCooks database with data [none/required/dev]")
+	seed := flag.Bool("seed", false, "Seeds the QuickCooks database with dummy data for development")
+	serve := flag.Bool("serve", false, "Starts the application server")
 
 	flag.Parse()
-
-	if *environment != "development" && *seed == "dev" {
-		message := "Cannot seed development data a non-development environment!\n"
-		panic(message)
-	}
 
 	connectionString, found := os.LookupEnv("PG_CONNECTION_STRING")
 	if !found {
@@ -41,16 +39,40 @@ func ReadConfig() *Config {
 
 	return &Config{
 		environment:      *environment,
-		seed:             *seed,
 		connectionString: connectionString,
+		seed:             *seed,
+		serve:            *serve,
 	}
 }
 
 func main() {
-	config := ReadConfig()
-	context := newUserManagementContext(*config)
-	err := newRouter(context).Run() // listen and serve on 0.0.0.0:8080
+	config := readConfig()
+
+	database := infrastructures.NewGormDB(config.connectionString)
+	err := database.Error
 	if err != nil {
-		panic("Error starting router:\n\n" + err.Error())
+		panic("Error connecting to database:\n" + err.Error())
+	}
+
+	context, err := newUserManagementContext(database)
+	if err != nil {
+		panic("Error creating user management context:\n" + err.Error())
+	}
+
+	if config.seed {
+		if config.environment != "development" {
+			panic("Cannot seed development data in a non-devlopment environment!")
+		}
+		err := context.Seed()
+		if err != nil {
+			panic("Unable to seed development data:\n" + err.Error())
+		}
+	}
+
+	if config.serve {
+		err = newRouter(context).Run() // listen and serve on 0.0.0.0:8080
+		if err != nil {
+			panic("Error starting router:\n" + err.Error())
+		}
 	}
 }
