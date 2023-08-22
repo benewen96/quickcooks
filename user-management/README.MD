@@ -10,10 +10,10 @@ Start the database container with a postgres database:
 docker-compose up -d
 ```
 
-Seed the required data into the database:
+Seed the dummy data into the database:
 
 ```sh
-go run . -seed=required
+go run . -seed
 ```
 
 Run the server:
