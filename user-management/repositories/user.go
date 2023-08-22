@@ -58,7 +58,10 @@ func (r *GormUserRepository) GetByTenantID(tenantID uint) ([]*models.User, error
 // GetByEmail returns the user with the given email, if it exists
 func (r *GormUserRepository) GetByEmail(email string) (*models.User, error) {
 	user := models.User{}
-	result := r.DB.Where("Email = ?", email).First(&user)
+	result := r.DB.
+		Preload("RoleAssignments").
+		Where("Email = ?", email).
+		First(&user)
 	return &user, result.Error
 }
 
