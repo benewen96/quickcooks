@@ -1,6 +1,9 @@
 package services
 
-import "quickcooks/user-management/repositories"
+import (
+	"quickcooks/user-management/models"
+	"quickcooks/user-management/repositories"
+)
 
 // A AuthenticationService is a provider for user authentication functionality
 type AuthenticationService struct {
@@ -17,6 +20,25 @@ func NewAuthenticationService(
 	}
 
 	return authenticationService, nil
+}
+
+// RegisterUser creates a new QuickCooks user with the given information
+func (s *AuthenticationService) RegisterUser(name string, email string, password string) (*models.User, error) {
+	user := &models.User{
+		Name:     name,
+		Email:    email,
+		Password: password,
+	}
+	return s.userRepository.Create(user)
+}
+
+// RegisterUser removes a new QuickCooks user with the given ID
+func (s *AuthenticationService) UnregisterUser(userID uint) (*models.User, error) {
+	user, err := s.userRepository.GetByID(userID)
+	if err != nil {
+		return nil, err
+	}
+	return s.userRepository.Delete(user)
 }
 
 // CheckUserEmailExists validates whether an a user with the given email exists

@@ -11,7 +11,6 @@ import (
 // An inversion of control container that registers all services for the user
 // management context
 type UserManagementContext struct {
-	RegistrationService   *services.RegistrationService
 	MyProfileService      *services.MyProfileService
 	MyTenantsService      *services.MyTenantsService
 	AuthorizationService  *services.AuthorizationService
@@ -26,7 +25,6 @@ func newUserManagementContext(database *gorm.DB) (*UserManagementContext, error)
 	rolePermissionRepository := repositories.NewGormRolePermissionRepository(database)
 	permissionRepository := repositories.NewGormPermissionRepository(database)
 
-	registrationService := services.NewRegistrationService(userRepository)
 	myProfileService := services.NewMyProfileService(userRepository)
 	myTenantsService := services.NewMyTenantsService(tenantRepository, roleRepository, roleAssignmentRepository)
 	authorizationService, err := services.NewAuthorizationService(roleRepository, rolePermissionRepository, permissionRepository)
@@ -39,7 +37,6 @@ func newUserManagementContext(database *gorm.DB) (*UserManagementContext, error)
 	}
 
 	userManagementContext := &UserManagementContext{
-		RegistrationService:   registrationService,
 		MyProfileService:      myProfileService,
 		MyTenantsService:      myTenantsService,
 		AuthorizationService:  authorizationService,
@@ -57,7 +54,7 @@ func (c *UserManagementContext) Seed() error {
 	var err error
 
 	if !c.AuthenticationService.CheckUserEmailExists("joe.bloggs@example.com") {
-		joeBloggs, err = c.RegistrationService.RegisterUser("Joe Bloggs", "joe.bloggs@example.com", "password")
+		joeBloggs, err = c.AuthenticationService.RegisterUser("Joe Bloggs", "joe.bloggs@example.com", "password")
 		if err != nil {
 			return err
 		}
@@ -88,7 +85,7 @@ func (c *UserManagementContext) Seed() error {
 	}
 
 	if !c.AuthenticationService.CheckUserEmailExists("jane.bloggs@example.com") {
-		janeBloggs, err = c.RegistrationService.RegisterUser("Jane Bloggs", "jane.bloggs@example.com", "password")
+		janeBloggs, err = c.AuthenticationService.RegisterUser("Jane Bloggs", "jane.bloggs@example.com", "password")
 		if err != nil {
 			return err
 		}
