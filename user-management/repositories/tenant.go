@@ -41,12 +41,16 @@ func (r *GormTenantRepository) GetByID(ID uint) (*models.Tenant, error) {
 func (r *GormTenantRepository) GetByUserID(userID uint) ([]*models.Tenant, error) {
 	var tenants []*models.Tenant
 	result := r.DB.
-		Preload("RoleAssignments").
-		Preload("RoleAssignments.User").
-		Preload("RoleAssignments.Role").
-		Preload("RoleAssignments.Role.RolePermissions").
-		Where("RoleAssignments.UserID = ?", userID).
+		Preload("RoleAssignments", r.DB.Where(&models.RoleAssignment{UserID: userID})).
 		Find(&tenants)
+
+	// FIXME: There is DEFINITELY a better way to do this
+	for i, tenant := range tenants {
+		// Remove any tenants without preloaded role assignments
+		if len(tenant.RoleAssignments) == 0 {
+			tenants = append(tenants[:i], tenants[i+1:]...)
+		}
+	}
 
 	return tenants, result.Error
 }
