@@ -26,6 +26,7 @@ func NewMyTenantsService(
 	}
 }
 
+// GetTenantByID returns the tenant with the given ID, if it exists
 func (s *MyTenantsService) GetTenantByID(ID uint) (*models.Tenant, error) {
 	return s.tenantRepository.GetByID(ID)
 }
