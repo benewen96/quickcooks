@@ -1,6 +1,7 @@
-package main
+package context
 
 import (
+	"quickcooks/user-management/config"
 	"quickcooks/user-management/infrastructures"
 	"quickcooks/user-management/models"
 	"quickcooks/user-management/repositories"
@@ -16,8 +17,8 @@ type UserManagementContext struct {
 	AuthenticationService *services.AuthenticationService
 }
 
-func newUserManagementContext(config *Config) (*UserManagementContext, error) {
-	database := infrastructures.NewGormDB(config.connectionString)
+func NewUserManagementContext(config *config.Config) (*UserManagementContext, error) {
+	database := infrastructures.NewGormDB(config.ConnectionString)
 	err := database.Error
 	if err != nil {
 		panic("Error connecting to database:\n" + err.Error())
@@ -38,7 +39,7 @@ func newUserManagementContext(config *Config) (*UserManagementContext, error) {
 	}
 
 	authenticationService, err := services.NewAuthenticationService(userRepository, services.AuthenticationServiceConfig{
-		JwtSecret: config.jwtSecret,
+		JwtSecret: config.JwtSecret,
 	})
 	if err != nil {
 		return nil, err
