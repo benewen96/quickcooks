@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"quickcooks/user-management/infrastructures"
 )
 
 type Config struct {
@@ -12,6 +11,7 @@ type Config struct {
 	connectionString string
 	seed             bool
 	serve            bool
+	jwtSecret        string
 }
 
 func readConfig() *Config {
@@ -37,24 +37,24 @@ func readConfig() *Config {
 		}
 	}
 
+	jwtSecret, found := os.LookupEnv("JWT_SECRET")
+	if !found {
+		jwtSecret = "secret!"
+	}
+
 	return &Config{
 		environment:      *environment,
 		connectionString: connectionString,
 		seed:             *seed,
 		serve:            *serve,
+		jwtSecret:        jwtSecret,
 	}
 }
 
 func main() {
 	config := readConfig()
 
-	database := infrastructures.NewGormDB(config.connectionString)
-	err := database.Error
-	if err != nil {
-		panic("Error connecting to database:\n" + err.Error())
-	}
-
-	context, err := newUserManagementContext(database)
+	context, err := newUserManagementContext(config)
 	if err != nil {
 		panic("Error creating user management context:\n" + err.Error())
 	}

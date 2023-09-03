@@ -1,11 +1,10 @@
 package main
 
 import (
+	"quickcooks/user-management/infrastructures"
 	"quickcooks/user-management/models"
 	"quickcooks/user-management/repositories"
 	"quickcooks/user-management/services"
-
-	"gorm.io/gorm"
 )
 
 // An inversion of control container that registers all services for the user
@@ -17,7 +16,13 @@ type UserManagementContext struct {
 	AuthenticationService *services.AuthenticationService
 }
 
-func newUserManagementContext(database *gorm.DB) (*UserManagementContext, error) {
+func newUserManagementContext(config *Config) (*UserManagementContext, error) {
+	database := infrastructures.NewGormDB(config.connectionString)
+	err := database.Error
+	if err != nil {
+		panic("Error connecting to database:\n" + err.Error())
+	}
+
 	userRepository := repositories.NewGormUserRepository(database)
 	tenantRepository := repositories.NewGormTenantRepository(database)
 	roleRepository := repositories.NewGormRoleRepository(database)
@@ -31,7 +36,10 @@ func newUserManagementContext(database *gorm.DB) (*UserManagementContext, error)
 	if err != nil {
 		return nil, err
 	}
-	authenticationService, err := services.NewAuthenticationService(userRepository)
+
+	authenticationService, err := services.NewAuthenticationService(userRepository, services.AuthenticationServiceConfig{
+		JwtSecret: config.jwtSecret,
+	})
 	if err != nil {
 		return nil, err
 	}
