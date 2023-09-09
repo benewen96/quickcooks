@@ -43,6 +43,11 @@ func (r *MockUserRepository) GetByEmail(email string) (*models.User, error) {
 	return nil, nil
 }
 
+func (r *MockUserRepository) Exists(email string) bool {
+	user, _ := r.GetByEmail(email)
+	return user == nil
+}
+
 func (r *MockUserRepository) Create(user *models.User) (*models.User, error) {
 	r.users = append(r.users, user)
 	return user, nil
