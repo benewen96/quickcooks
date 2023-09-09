@@ -1,11 +1,7 @@
 package models
 
-import (
-	"gorm.io/gorm"
-)
-
 type Role struct {
-	gorm.Model
+	Entity
 	Name            string
 	RoleAssignments []RoleAssignment
 	RolePermissions []RolePermission

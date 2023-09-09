@@ -1,9 +1,7 @@
 package models
 
-import "gorm.io/gorm"
-
 type RolePermission struct {
-	gorm.Model
+	Entity
 	RoleID       uint
 	PermissionID uint
 }

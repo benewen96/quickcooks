@@ -1,9 +1,7 @@
 package models
 
-import "gorm.io/gorm"
-
 type RoleAssignment struct {
-	gorm.Model
+	Entity
 	TenantID uint
 	UserID   uint
 	RoleID   uint

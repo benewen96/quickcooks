@@ -1,9 +1,7 @@
 package models
 
-import "gorm.io/gorm"
-
 type Permission struct {
-	gorm.Model
+	Entity
 	Resource        string
 	Action          string
 	RolePermissions []RolePermission

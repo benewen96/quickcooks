@@ -1,11 +1,7 @@
 package models
 
-import (
-	"gorm.io/gorm"
-)
-
 type Tenant struct {
-	gorm.Model
+	Entity
 	Name            string
 	RoleAssignments []RoleAssignment
 }

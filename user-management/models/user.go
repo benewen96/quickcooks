@@ -1,13 +1,9 @@
 package models
 
-import (
-	"gorm.io/gorm"
-)
-
 type User struct {
-	gorm.Model
+	Entity
 	Name            string
 	Email           string
-	Password        string
+	Password        string `json:"-"`
 	RoleAssignments []RoleAssignment
 }
