@@ -30,11 +30,11 @@ func AddAuthRoutes(rg *gin.RouterGroup, context *context.UserManagementContext) 
 			return
 		}
 		if authed {
-			c.SetCookie("token", token, 3600, "/", "*", true, true)
+			c.SetCookie("token", token, 3600, "/", "", true, true)
 			c.JSON(http.StatusOK, user)
 		}
 		if !authed {
-			c.Abort()
+			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 	})
 }
