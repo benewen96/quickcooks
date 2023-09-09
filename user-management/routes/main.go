@@ -11,5 +11,8 @@ func NewRouter(context *context.UserManagementContext) *gin.Engine {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
+	root := router.Group("/")
+	AddAuthRoutes(root, context)
+
 	return router
 }
