@@ -1,4 +1,4 @@
-package services
+package authentication
 
 import (
 	"quickcooks/user-management/models"
@@ -38,7 +38,7 @@ func (s *AuthenticationService) RegisterUser(
 ) (
 	*models.User, error,
 ) {
-	hashedPassword, err := s.hashPassword(password)
+	hashedPassword, err := s.HashPassword(password)
 	if err != nil {
 		return nil, err
 	}
@@ -54,20 +54,15 @@ func (s *AuthenticationService) RegisterUser(
 func (s *AuthenticationService) Login(
 	email string, password string,
 ) (
-	token string, authed bool, err error,
+	token string, user *models.User, authed bool, err error,
 ) {
-	user, err := s.userRepository.GetByEmail(email)
+	user, err = s.userRepository.GetByEmail(email)
 	if err != nil {
-		return "", false, err
+		return "", nil, false, err
 	}
 
-	hashedPassword, err := s.hashPassword(password)
-	if err != nil {
-		return "", false, err
-	}
-
-	if !checkHashedPassword(user.Password, hashedPassword) {
-		return "", false, nil
+	if !s.CheckHashedPassword(password, user.Password) {
+		return "", nil, false, nil
 	}
 
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -76,12 +71,12 @@ func (s *AuthenticationService) Login(
 		"roles": user.RoleAssignments,
 	})
 
-	tokenString, err := jwtToken.SignedString(s.config.JwtSecret)
+	tokenString, err := jwtToken.SignedString([]byte(s.config.JwtSecret))
 	if err != nil {
-		return "", false, err
+		return "", nil, false, err
 	}
 
-	return tokenString, false, nil
+	return tokenString, user, true, nil
 }
 
 // UnregisterUser removes a new QuickCooks user with the given ID
@@ -99,12 +94,12 @@ func (s *AuthenticationService) CheckUserEmailExists(email string) bool {
 	return s.userRepository.Exists(email)
 }
 
-func (s *AuthenticationService) hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+func (s *AuthenticationService) HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 4)
 	return string(bytes), err
 }
 
-func checkHashedPassword(password, hash string) bool {
+func (s *AuthenticationService) CheckHashedPassword(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }

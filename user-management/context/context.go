@@ -6,6 +6,7 @@ import (
 	"quickcooks/user-management/models"
 	"quickcooks/user-management/repositories"
 	"quickcooks/user-management/services"
+	"quickcooks/user-management/services/authentication"
 )
 
 // An inversion of control container that registers all services for the user
@@ -14,7 +15,7 @@ type UserManagementContext struct {
 	MyProfileService      *services.MyProfileService
 	MyTenantsService      *services.MyTenantsService
 	AuthorizationService  *services.AuthorizationService
-	AuthenticationService *services.AuthenticationService
+	AuthenticationService *authentication.AuthenticationService
 }
 
 func NewUserManagementContext(config *config.Config) (*UserManagementContext, error) {
@@ -38,7 +39,7 @@ func NewUserManagementContext(config *config.Config) (*UserManagementContext, er
 		return nil, err
 	}
 
-	authenticationService, err := services.NewAuthenticationService(userRepository, services.AuthenticationServiceConfig{
+	authenticationService, err := authentication.NewAuthenticationService(userRepository, authentication.AuthenticationServiceConfig{
 		JwtSecret: config.JwtSecret,
 	})
 	if err != nil {
